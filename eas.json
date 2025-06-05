@@ -5,19 +5,24 @@
   "build": {
     "production": {
       "developmentClient": false,
-      "appRoot": "SandyAdmin",
       "distribution": "store",
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "withoutCredentials": true
       },
       "ios": {
         "simulator": false
-      }
+      },
+      "prebuildCommand": "chmod +x ./eas-build-pre-install.sh && ./eas-build-pre-install.sh"
     },
     "preview": {
       "android": {
-        "buildType": "apk"
-      }
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "withoutCredentials": true
+      },
+      "prebuildCommand": "chmod +x ./eas-build-pre-install.sh && ./eas-build-pre-install.sh"
     }
   },
   "submit": {

@@ -1,15 +1,15 @@
-import React from 'react';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
-import { useTheme } from '../../contexts/ThemeContext';
 import { StatusBar } from 'expo-status-bar';
+import React from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function TabLayout() {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <>
-      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.colors.background.DEFAULT} />
+      <StatusBar style="dark" backgroundColor={theme.colors.background.DEFAULT} />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: theme.colors.primary.DEFAULT,
@@ -18,27 +18,18 @@ export default function TabLayout() {
             backgroundColor: theme.colors.surface.DEFAULT,
             borderTopColor: theme.colors.border.DEFAULT,
             borderTopWidth: 1,
-            paddingBottom: 8,
-            paddingTop: 8,
+            paddingBottom: 4,
+            paddingTop: 2,
             height: 70,
-            shadowColor: theme.colors.text.DEFAULT,
-            shadowOffset: { width: 0, height: -2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 8,
           },
           tabBarLabelStyle: {
             fontSize: 12,
             fontWeight: '600',
             marginTop: 0,
+            marginBottom: 8,
           },
           headerStyle: {
             backgroundColor: theme.colors.primary.DEFAULT,
-            shadowColor: theme.colors.text.DEFAULT,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.1,
-            shadowRadius: 8,
-            elevation: 4,
           },
           headerTintColor: theme.colors.text.inverse,
           headerTitleStyle: {
@@ -54,7 +45,7 @@ export default function TabLayout() {
             title: 'Dashboard',
             headerTitle: 'Sandy\'s Dashboard',
             tabBarIcon: ({ color, size }) => (
-              <FontAwesome name="dashboard" size={size} color={color} />
+              <Ionicons name="stats-chart" size={size} color={color} />
             ),
           }}
         />
@@ -62,9 +53,9 @@ export default function TabLayout() {
           name="orders"
           options={{
             title: 'Orders',
-            headerTitle: 'Order Management',
+            headerTitle: 'Orders',
             tabBarIcon: ({ color, size }) => (
-              <FontAwesome name="list" size={size} color={color} />
+              <FontAwesome name="shopping-cart" size={size} color={color} />
             ),
           }}
         />

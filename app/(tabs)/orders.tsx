@@ -1,26 +1,72 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  RefreshControl,
-  TouchableOpacity,
-  Alert,
-  FlatList,
-  StatusBar,
-  Platform,
+    Alert,
+    FlatList,
+    Platform,
+    RefreshControl,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
-import { ordersAPI } from '../../services/api';
-import { Card } from '../../components/ui/card';
 import { LoadingSpinner } from '../../components/ui/loading-spinner';
-import { Order, OrderItem } from '../../types/order';
-import * as Notifications from 'expo-notifications';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { ordersAPI } from '../../services/api';
+import { Order, OrderItem } from '../../types/order';
+
+interface Styles {
+  container: ViewStyle;
+  loadingContainer: ViewStyle;
+  listContainer: ViewStyle;
+  orderCard: ViewStyle;
+  orderHeader: ViewStyle;
+  orderIdContainer: ViewStyle;
+  orderId: TextStyle;
+  orderDateContainer: ViewStyle;
+  orderDate: TextStyle;
+  orderDetails: ViewStyle;
+  customerInfo: ViewStyle;
+  customerTextContainer: ViewStyle;
+  customerName: TextStyle;
+  email: TextStyle;
+  contactInfo: ViewStyle;
+  contactItem: ViewStyle;
+  phone: TextStyle;
+  address: TextStyle;
+  totalContainer: ViewStyle;
+  totalLabel: TextStyle;
+  total: TextStyle;
+  itemsContainer: ViewStyle;
+  sectionHeader: ViewStyle;
+  sectionTitle: TextStyle;
+  orderItem: ViewStyle;
+  itemHeader: ViewStyle;
+  itemName: TextStyle;
+  itemQuantity: TextStyle;
+  itemDetails: ViewStyle;
+  itemPrice: TextStyle;
+  itemSubtotal: TextStyle;
+  notesContainer: ViewStyle;
+  itemNotes: TextStyle;
+  statusContainer: ViewStyle;
+  statusInfo: ViewStyle;
+  statusLabel: TextStyle;
+  statusBadge: ViewStyle;
+  statusText: TextStyle;
+  actionButtons: ViewStyle;
+  button: ViewStyle;
+  buttonText: TextStyle;
+  emptyContainer: ViewStyle;
+  emptyText: TextStyle;
+  emptySubtext: TextStyle;
+}
 
 export default function OrdersScreen() {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -36,22 +82,6 @@ export default function OrdersScreen() {
           ...order,
           status: order.status as 'pending' | 'preparing' | 'ready' | 'delivered'
         }));
-        
-        // Check if there's a new order
-        if (lastOrderId && typedOrders.length > 0) {
-          const latestOrder = typedOrders[0];
-          if (latestOrder._id.toString() !== lastOrderId) {
-            // Show notification for new order
-            await Notifications.scheduleNotificationAsync({
-              content: {
-                title: 'New Order Received',
-                body: `Order #${latestOrder._id} from ${latestOrder.customerName}`,
-                data: { orderId: latestOrder._id.toString() },
-              },
-              trigger: null,
-            });
-          }
-        }
         
         setOrders(typedOrders);
         if (typedOrders.length > 0) {
@@ -125,7 +155,7 @@ export default function OrdersScreen() {
     }
   };
 
-  const styles = StyleSheet.create({
+  const styles = StyleSheet.create<Styles>({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background.DEFAULT,
@@ -137,18 +167,19 @@ export default function OrdersScreen() {
       backgroundColor: theme.colors.background.DEFAULT,
     },
     listContainer: {
-      padding: theme.spacing.md,
+      padding: theme.spacing.sm,
+      gap: theme.spacing.sm,
     },
     orderCard: {
       backgroundColor: theme.colors.surface.DEFAULT,
       borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.lg,
-      marginBottom: theme.spacing.md,
+      padding: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
       shadowColor: theme.colors.text.DEFAULT,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 8,
       borderWidth: 1,
       borderColor: theme.colors.border.light,
     },
@@ -156,7 +187,7 @@ export default function OrdersScreen() {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
       paddingBottom: theme.spacing.sm,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.border.light,
@@ -164,33 +195,45 @@ export default function OrdersScreen() {
     orderIdContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.sm,
+      gap: theme.spacing.xs,
+      backgroundColor: `${theme.colors.primary.DEFAULT}10`,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.borderRadius.md,
     },
     orderId: {
       ...theme.typography.body,
-      fontWeight: '700',
-      color: theme.colors.text.DEFAULT,
+      fontWeight: '700' as const,
+      color: theme.colors.primary.DEFAULT,
+      fontSize: 14,
     },
     orderDateContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.xs,
+      backgroundColor: theme.colors.background.secondary,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.borderRadius.md,
     },
     orderDate: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
+      fontSize: 12,
     },
     orderDetails: {
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
     },
     customerInfo: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.sm,
-      marginBottom: theme.spacing.md,
-      padding: theme.spacing.md,
-      backgroundColor: theme.colors.background.secondary,
+      marginBottom: theme.spacing.sm,
+      padding: theme.spacing.sm,
+      backgroundColor: `${theme.colors.primary.DEFAULT}08`,
       borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: `${theme.colors.primary.DEFAULT}15`,
     },
     customerTextContainer: {
       flex: 1,
@@ -198,14 +241,21 @@ export default function OrdersScreen() {
     customerName: {
       ...theme.typography.h3,
       color: theme.colors.text.DEFAULT,
-      marginBottom: theme.spacing.xs,
+      marginBottom: 2,
+      fontSize: 15,
     },
     email: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
+      fontSize: 12,
     },
     contactInfo: {
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      backgroundColor: theme.colors.background.secondary,
+      borderRadius: theme.borderRadius.md,
+      padding: theme.spacing.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.border.light,
     },
     contactItem: {
       flexDirection: 'row',
@@ -217,50 +267,63 @@ export default function OrdersScreen() {
     phone: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
+      fontSize: 12,
     },
     address: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
+      fontSize: 12,
     },
     totalContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       backgroundColor: theme.colors.primary.DEFAULT,
-      padding: theme.spacing.md,
+      padding: theme.spacing.sm,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
+      marginBottom: theme.spacing.sm,
+      shadowColor: theme.colors.primary.DEFAULT,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
     },
     totalLabel: {
       ...theme.typography.body,
       color: theme.colors.text.inverse,
-      fontWeight: '600',
+      fontWeight: '600' as const,
+      fontSize: 14,
     },
     total: {
       ...theme.typography.h3,
-      fontWeight: '700',
+      fontWeight: '700' as const,
       color: theme.colors.text.inverse,
+      fontSize: 16,
     },
     itemsContainer: {
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
     },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.sm,
-      marginBottom: theme.spacing.md,
+      gap: theme.spacing.xs,
+      marginBottom: theme.spacing.sm,
+      paddingBottom: theme.spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.light,
     },
     sectionTitle: {
       ...theme.typography.h3,
       color: theme.colors.text.DEFAULT,
-      fontWeight: '600',
+      fontWeight: '600' as const,
+      fontSize: 14,
     },
     orderItem: {
       backgroundColor: theme.colors.background.secondary,
-      padding: theme.spacing.md,
+      padding: theme.spacing.sm,
       borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.sm,
-      borderLeftWidth: 4,
+      marginBottom: theme.spacing.xs,
+      borderLeftWidth: 3,
       borderLeftColor: theme.colors.primary.DEFAULT,
     },
     itemHeader: {
@@ -271,17 +334,19 @@ export default function OrdersScreen() {
     },
     itemName: {
       ...theme.typography.body,
-      fontWeight: '600',
+      fontWeight: '600' as const,
       color: theme.colors.text.DEFAULT,
+      fontSize: 14,
     },
     itemQuantity: {
       ...theme.typography.caption,
       color: theme.colors.text.inverse,
       backgroundColor: theme.colors.primary.DEFAULT,
       paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
+      paddingVertical: 2,
       borderRadius: theme.borderRadius.sm,
-      fontWeight: '700',
+      fontWeight: '700' as const,
+      fontSize: 12,
     },
     itemDetails: {
       flexDirection: 'row',
@@ -291,11 +356,13 @@ export default function OrdersScreen() {
     itemPrice: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
+      fontSize: 12,
     },
     itemSubtotal: {
       ...theme.typography.caption,
-      fontWeight: '600',
+      fontWeight: '600' as const,
       color: theme.colors.primary.DEFAULT,
+      fontSize: 12,
     },
     notesContainer: {
       flexDirection: 'row',
@@ -305,18 +372,21 @@ export default function OrdersScreen() {
       padding: theme.spacing.sm,
       backgroundColor: theme.colors.background.tertiary,
       borderRadius: theme.borderRadius.sm,
+      borderWidth: 1,
+      borderColor: theme.colors.border.light,
     },
     itemNotes: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
       fontStyle: 'italic',
       flex: 1,
+      fontSize: 12,
     },
     statusContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
       borderTopWidth: 1,
       borderTopColor: theme.colors.border.light,
     },
@@ -328,20 +398,22 @@ export default function OrdersScreen() {
     statusLabel: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
-      fontWeight: '600',
+      fontWeight: '600' as const,
+      fontSize: 12,
     },
     statusBadge: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
-      borderRadius: theme.borderRadius.xl,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.borderRadius.md,
     },
     statusText: {
       ...theme.typography.caption,
-      fontWeight: '700',
+      fontWeight: '700' as const,
       color: theme.colors.text.inverse,
+      fontSize: 12,
     },
     actionButtons: {
       flexDirection: 'row',
@@ -351,38 +423,41 @@ export default function OrdersScreen() {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
       borderRadius: theme.borderRadius.md,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.1,
       shadowRadius: 4,
-      elevation: 3,
+      elevation: 2,
     },
     buttonText: {
       ...theme.typography.caption,
       color: theme.colors.text.inverse,
-      fontWeight: '700',
+      fontWeight: '700' as const,
+      fontSize: 12,
     },
     emptyContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      padding: theme.spacing.xl,
-      marginTop: theme.spacing.xxl,
+      padding: theme.spacing.lg,
+      marginTop: theme.spacing.xl,
     },
     emptyText: {
       ...theme.typography.body,
       color: theme.colors.text.secondary,
       marginTop: theme.spacing.md,
       textAlign: 'center',
+      fontSize: 15,
     },
     emptySubtext: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
       marginTop: theme.spacing.sm,
       textAlign: 'center',
+      fontSize: 13,
     },
   });
 
@@ -390,11 +465,11 @@ export default function OrdersScreen() {
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
         <View style={styles.orderIdContainer}>
-          <Ionicons name="receipt" size={20} color={theme.colors.primary.DEFAULT} />
+          <Ionicons name="receipt" size={16} color={theme.colors.primary.DEFAULT} />
           <Text style={styles.orderId}>Order #{item._id?.toString().padStart(6, '0')}</Text>
         </View>
         <View style={styles.orderDateContainer}>
-          <Ionicons name="time-outline" size={16} color={theme.colors.text.secondary} />
+          <Ionicons name="time-outline" size={14} color={theme.colors.text.secondary} />
           <Text style={styles.orderDate}>
             {new Date(item.createdAt).toLocaleDateString('en-US', {
               month: 'short',
@@ -408,13 +483,12 @@ export default function OrdersScreen() {
       
       <View style={styles.orderDetails}>
         <View style={styles.customerInfo}>
-          <Ionicons name="person" size={20} color={theme.colors.primary.DEFAULT} />
+          <Ionicons name="person" size={18} color={theme.colors.primary.DEFAULT} />
           <View style={styles.customerTextContainer}>
             <Text style={styles.customerName}>{item.customerName}</Text>
             <Text style={styles.email}>{item.email}</Text>
           </View>
         </View>
-        
         <View style={styles.contactInfo}>
           <View style={styles.contactItem}>
             <Ionicons name="call" size={16} color={theme.colors.text.secondary} />
@@ -425,16 +499,21 @@ export default function OrdersScreen() {
             <Text style={styles.address}>{item.address || 'No address provided'}</Text>
           </View>
         </View>
-
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total Amount</Text>
           <Text style={styles.total}>${item.totalAmount.toFixed(2)}</Text>
         </View>
+        {item.cookingInstructions && (
+          <View style={styles.notesContainer}>
+            <Ionicons name="reader" size={16} color={theme.colors.text.secondary} />
+            <Text style={styles.itemNotes}>Cooking Instructions: {item.cookingInstructions}</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.itemsContainer}>
         <View style={styles.sectionHeader}>
-          <Ionicons name="restaurant" size={20} color={theme.colors.text.DEFAULT} />
+          <Ionicons name="restaurant" size={18} color={theme.colors.text.DEFAULT} />
           <Text style={styles.sectionTitle}>Order Items ({item.items.length})</Text>
         </View>
         {item.items.map((orderItem: OrderItem, index: number) => (
@@ -529,7 +608,7 @@ export default function OrdersScreen() {
   return (
     <View style={styles.container}>
       <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
+        barStyle="dark-content"
         backgroundColor={theme.colors.primary.DEFAULT}
         translucent={Platform.OS === 'android'}
       />

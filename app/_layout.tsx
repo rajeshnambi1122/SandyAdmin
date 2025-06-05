@@ -1,30 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Slot, useRouter, useSegments, Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { View } from 'react-native';
 import { useFonts } from 'expo-font';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { setupNotificationListeners, requestNotificationPermission } from '../services/notifications';
-import messaging from '@react-native-firebase/messaging';
-import '../config/firebase'; // Import Firebase config
-import React from 'react';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import { useTheme } from '../contexts/ThemeContext';
+import React, { createContext, useEffect, useState } from 'react';
+import { View } from 'react-native';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { authAPI } from '../services/api';
+import { requestNotificationPermission } from '../services/notifications';
 
 SplashScreen.preventAutoHideAsync();
 
-// Create a context to manage auth state
-export const AuthContext = React.createContext<{
+export const AuthContext = createContext<{
   signIn: (token: string) => Promise<void>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
-  user: {
-    name: string;
-    email: string;
-    role: string;
-  } | null;
+  user: any;
 }>({
   signIn: async () => {},
   signOut: async () => {},
@@ -32,84 +23,42 @@ export const AuthContext = React.createContext<{
   user: null,
 });
 
-// Initialize Firebase Messaging
-const initializeFirebaseMessaging = async () => {
-  try {
-    // Check if Firebase is initialized
-    if (!messaging().app) {
-      console.log('Firebase not initialized, waiting...');
-      return;
-    }
-
-    // Request permission and setup notifications
-    await requestNotificationPermission();
-    
-    // Setup notification listeners
-    const unsubscribe = setupNotificationListeners();
-    
-    // Return cleanup function
-    return () => {
-      unsubscribe();
-    };
-  } catch (error) {
-    console.error('Error initializing Firebase Messaging:', error);
-  }
-};
-
 function RootLayoutContent() {
-  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [user, setUser] = useState<{
-    name: string;
-    email: string;
-    role: string;
-  } | null>(null);
+  const [user, setUser] = useState<any>(null);
   const segments = useSegments();
   const router = useRouter();
-  const [loadedFonts] = useFonts({
-    // ... your fonts
-  });
+  const { theme } = useTheme();
+
+  // Temporarily remove custom font loading
+  const [loadedFonts] = useFonts({});
 
   useEffect(() => {
-    // Initialize Firebase Messaging
-    const cleanup = initializeFirebaseMessaging();
-    return () => {
-      cleanup?.then(unsubscribe => unsubscribe?.());
-    };
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      console.log('Auth check - Token found:', !!token);
-      setIsAuthenticated(!!token);
-
-      // Load user data if token exists
-      if (token) {
-        const userDataStr = await AsyncStorage.getItem('user');
-        if (userDataStr) {
-          const userData = JSON.parse(userDataStr);
-          setUser(userData);
-        } else {
-          // If no user data in storage but token exists, fetch it
+    const initializeApp = async () => {
+      try {
+        // Check for existing token
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          // Get user data
           const userData = await authAPI.getCurrentUser();
           setUser(userData);
-          await AsyncStorage.setItem('user', JSON.stringify(userData));
+          setIsAuthenticated(true);
+          
+          // Request notification permissions
+          await requestNotificationPermission();
         }
+      } catch (error) {
+        console.error('Error initializing app:', error);
+        // Clear invalid token
+        await AsyncStorage.removeItem('token');
+        await AsyncStorage.removeItem('user');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error checking auth:', error);
-      setIsAuthenticated(false);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  useEffect(() => {
-    checkAuth();
+    initializeApp();
   }, []);
 
   useEffect(() => {
@@ -180,18 +129,9 @@ function RootLayoutContent() {
 
   return (
     <AuthContext.Provider value={{ signIn, signOut, isAuthenticated, user }}>
-      <Stack>
-        {!isAuthenticated ? (
-          <Stack.Screen 
-            name="(auth)" 
-            options={{ headerShown: false }} 
-          />
-        ) : (
-          <Stack.Screen 
-            name="(tabs)" 
-            options={{ headerShown: false }} 
-          />
-        )}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </AuthContext.Provider>
   );

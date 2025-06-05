@@ -8,6 +8,7 @@ export interface Order {
   totalAmount: number;
   status: 'pending' | 'preparing' | 'ready' | 'delivered';
   createdAt: string;
+  cookingInstructions?: string;
 }
 
 export interface OrderItem {

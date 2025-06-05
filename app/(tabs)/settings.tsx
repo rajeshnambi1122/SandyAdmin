@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useContext, useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { LoadingSpinner } from '../../components/ui/loading-spinner';
 import { useTheme } from '../../contexts/ThemeContext';
 import { authAPI } from '../../services/api';
-import { LoadingSpinner } from '../../components/ui/loading-spinner';
-import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../_layout';
 
 interface AdminProfile {
@@ -11,6 +11,23 @@ interface AdminProfile {
   email: string;
   phone?: string;
   role: string;
+}
+
+interface Styles {
+  container: ViewStyle;
+  content: ViewStyle;
+  section: ViewStyle;
+  sectionTitle: TextStyle;
+  infoRow: ViewStyle;
+  infoIcon: ViewStyle;
+  infoContent: ViewStyle;
+  infoLabel: TextStyle;
+  infoValue: TextStyle;
+  loadingContainer: ViewStyle;
+  logoutButton: ViewStyle;
+  logoutContent: ViewStyle;
+  logoutIconContainer: ViewStyle;
+  logoutText: TextStyle;
 }
 
 export default function SettingsScreen() {
@@ -35,7 +52,7 @@ export default function SettingsScreen() {
     fetchProfile();
   }, []);
 
-  const styles = StyleSheet.create({
+  const styles = StyleSheet.create<Styles>({
     container: {
       flex: 1,
       backgroundColor: theme.colors.background.DEFAULT,
@@ -60,7 +77,7 @@ export default function SettingsScreen() {
       ...theme.typography.h3,
       color: theme.colors.text.DEFAULT,
       marginBottom: theme.spacing.md,
-      fontWeight: '600',
+      fontWeight: '600' as const,
     },
     infoRow: {
       flexDirection: 'row',
@@ -89,7 +106,8 @@ export default function SettingsScreen() {
     infoValue: {
       ...theme.typography.body,
       color: theme.colors.text.DEFAULT,
-      fontWeight: '500',
+      fontWeight: '700' as const,
+      fontSize: 14,
     },
     loadingContainer: {
       flex: 1,
@@ -119,7 +137,7 @@ export default function SettingsScreen() {
     },
     logoutText: {
       ...theme.typography.body,
-      fontWeight: '600',
+      fontWeight: '600' as const,
       fontSize: 14,
     },
   });

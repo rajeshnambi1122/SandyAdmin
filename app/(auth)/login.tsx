@@ -1,33 +1,32 @@
-import React, { useState, useContext } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
+import React, { useContext, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  ViewStyle,
-  TextStyle,
-  Image,
-  ImageStyle,
+    Alert,
+    Image,
+    ImageStyle,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TextStyle,
+    TouchableOpacity,
+    View,
+    ViewStyle,
 } from 'react-native';
-import { router } from 'expo-router';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useTheme } from '../../contexts/ThemeContext';
 import { authAPI } from '../../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import LoadingSpinner from '../../components/LoadingSpinner';
 import { AuthContext } from '../_layout';
-import { StatusBar } from 'expo-status-bar';
-import { FontAwesome } from '@expo/vector-icons';
 
 interface Styles {
   container: ViewStyle;
   scrollContent: ViewStyle;
   formContainer: ViewStyle;
   title: TextStyle;
+  subtitle: TextStyle;
   inputContainer: ViewStyle;
   label: TextStyle;
   input: TextStyle;
@@ -42,7 +41,7 @@ interface Styles {
 }
 
 export default function LoginScreen() {
-  const { theme, isDark } = useTheme();
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -83,9 +82,7 @@ export default function LoginScreen() {
       const response = await authAPI.login(email, password);
       
       if (response.token) {
-        // Use the AuthContext to sign in
         await signIn(response.token);
-        // The navigation will be handled by the AuthContext
       } else {
         Alert.alert(
           'Login Failed',
@@ -104,8 +101,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.primary[900] }]}>
-      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={theme.colors.primary[900]} />
+    <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
+      <StatusBar style="dark" backgroundColor="#FFFFFF" />
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: 'transparent' }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -121,8 +118,18 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
           </View>
-          <View style={[styles.formContainer, { backgroundColor: theme.colors.surface.DEFAULT }]}>
-            <Text style={[styles.title, { color: theme.colors.primary.DEFAULT }]}>Admin Login</Text>
+          <View style={[styles.formContainer, { 
+            backgroundColor: '#FFFFFF',
+            borderWidth: 1,
+            borderColor: theme.colors.border.light,
+            shadowColor: theme.colors.text.DEFAULT,
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.08,
+            shadowRadius: 12,
+            elevation: 4,
+          }]}>
+            <Text style={[styles.title, { color: theme.colors.primary.DEFAULT }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>Sign in to continue</Text>
             
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: theme.colors.text.DEFAULT }]}>Email</Text>
@@ -187,14 +194,21 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity
-              style={[styles.button, { backgroundColor: theme.colors.primary.DEFAULT }]}
+              style={[styles.button, { 
+                backgroundColor: theme.colors.primary.DEFAULT,
+                shadowColor: theme.colors.primary.DEFAULT,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.2,
+                shadowRadius: 8,
+                elevation: 4,
+              }]}
               onPress={handleLogin}
               disabled={loading}
             >
               {loading ? (
                 <LoadingSpinner size="small" color={theme.colors.text.inverse} />
               ) : (
-                <Text style={[styles.buttonText, { color: theme.colors.text.inverse }]}>Login</Text>
+                <Text style={[styles.buttonText, { color: theme.colors.text.inverse }]}>Sign In</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -225,18 +239,15 @@ const styles = StyleSheet.create<Styles>({
   formContainer: {
     borderRadius: 16,
     padding: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: 32,
   },
@@ -276,14 +287,6 @@ const styles = StyleSheet.create<Styles>({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   buttonText: {
     fontSize: 18,

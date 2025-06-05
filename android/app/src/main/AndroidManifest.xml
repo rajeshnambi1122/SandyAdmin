@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MESSAGING"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -19,16 +20,11 @@
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
-    
-    <!-- Add Firebase Messaging Service -->
-    <service
-      android:name="com.google.firebase.messaging.FirebaseMessagingService"
-      android:exported="false">
+    <service android:name="com.google.firebase.messaging.FirebaseMessagingService" android:exported="false">
       <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+        <action android:name="com.google.firebase.MESSAGING_EVENT"/>
       </intent-filter>
     </service>
-
     <activity android:name=".MainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -40,6 +36,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="sandyadmin"/>
         <data android:scheme="exp+sandyadmin"/>
+        <data android:scheme="exp+adminapp"/>
       </intent-filter>
     </activity>
   </application>

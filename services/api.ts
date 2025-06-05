@@ -1,5 +1,5 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 
 // Use the main backend URL
 const API_URL = 'https://api.sandysmarket.net/api';

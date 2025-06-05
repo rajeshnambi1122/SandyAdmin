@@ -1,6 +1,4 @@
-import { Appearance } from 'react-native';
-
-export const lightTheme = {
+export const theme = {
   colors: {
     primary: {
       DEFAULT: '#ea580c', // Orange-600
@@ -81,49 +79,3 @@ export const lightTheme = {
     },
   },
 };
-
-export const darkTheme = {
-  colors: {
-    primary: {
-      DEFAULT: '#fb923c', // Orange-400 (lighter for dark mode)
-      50: '#7c2d12',
-      100: '#9a3412',
-      200: '#c2410c',
-      300: '#ea580c',
-      400: '#fb923c',
-      500: '#f97316',
-      600: '#fdba74',
-      700: '#fed7aa',
-      800: '#ffedd5',
-      900: '#fff7ed',
-    },
-    background: {
-      DEFAULT: '#0f172a',
-      secondary: '#1e293b',
-      tertiary: '#334155',
-    },
-    surface: {
-      DEFAULT: '#1e293b',
-      elevated: '#334155',
-    },
-    text: {
-      DEFAULT: '#f8fafc',
-      secondary: '#cbd5e1',
-      light: '#94a3b8',
-      inverse: '#0f172a',
-    },
-    border: {
-      DEFAULT: '#475569',
-      light: '#334155',
-    },
-    success: '#34d399',
-    warning: '#fbbf24',
-    error: '#f87171',
-    info: '#60a5fa',
-  },
-  spacing: lightTheme.spacing,
-  borderRadius: lightTheme.borderRadius,
-  typography: lightTheme.typography,
-};
-
-export const theme = lightTheme; // Default export for backward compatibility

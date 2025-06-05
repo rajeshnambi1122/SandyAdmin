@@ -1,12 +1,9 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert, Image, ActivityIndicator } from 'react-native';
-import { ordersAPI } from '../../services/api';
-import Card from '../../components/Card';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import messaging from '@react-native-firebase/messaging';
-import { adminAPI } from '../../services/api';
-import { useTheme } from '../../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
+import messaging from '@react-native-firebase/messaging';
+import React, { useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from '../../contexts/ThemeContext';
+import { adminAPI, ordersAPI } from '../../services/api';
 import { Order } from '../../types/order';
 import { AuthContext } from '../_layout';
 
@@ -50,7 +47,7 @@ export default function DashboardScreen() {
           todayOrders: orders.filter(order => order.createdAt.split('T')[0] === today).length,
           pendingOrders: orders.filter(order => order.status === 'pending').length,
           processingOrders: orders.filter(order => order.status === 'preparing').length,
-          completedOrders: orders.filter(order => order.status === 'ready').length,
+          completedOrders: orders.filter(order => order.status === 'ready' || order.status === 'delivered').length,
           totalRevenue,
           todayRevenue,
           averageOrderValue,
@@ -67,7 +64,7 @@ export default function DashboardScreen() {
   useEffect(() => {
     fetchStats();
 
-    // Request permission
+    // Request permission and get FCM token
     messaging().requestPermission()
       .then(authStatus => {
         if (authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -87,13 +84,6 @@ export default function DashboardScreen() {
           });
         }
       });
-
-    // Listen for foreground messages
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-    });
-
-    return unsubscribe;
   }, []);
 
   const onRefresh = () => {
@@ -130,8 +120,9 @@ export default function DashboardScreen() {
       marginBottom: theme.spacing.xs,
     },
     welcomeText: {
-      ...theme.typography.h1,
+      ...theme.typography.h2,
       color: theme.colors.text.DEFAULT,
+      fontWeight: 'bold',
       marginBottom: theme.spacing.sm,
     },
     subtitleText: {
@@ -182,7 +173,7 @@ export default function DashboardScreen() {
     statValue: {
       ...theme.typography.h2,
       color: theme.colors.text.DEFAULT,
-      fontWeight: '700',
+      fontWeight: 'bold',
       marginBottom: theme.spacing.xs,
     },
     primaryStatValue: {
@@ -270,7 +261,10 @@ export default function DashboardScreen() {
     >
       <View style={styles.headerContainer}>
         <Text style={[styles.welcomeText, { color: theme.colors.text.DEFAULT }]}>
-          Welcome back, {user?.name || 'Admin'}!
+          Welcome back,{'\n'}
+          <Text style={{ fontSize: 16, color: theme.colors.text.secondary }}>
+            {user?.name || 'Admin'}!
+          </Text>
         </Text>
       </View>
 
