@@ -11,6 +11,7 @@ export default function TabLayout() {
     <>
       <StatusBar style="dark" backgroundColor={theme.colors.background.DEFAULT} />
       <Tabs
+        initialRouteName="orders"
         screenOptions={{
           tabBarActiveTintColor: theme.colors.primary.DEFAULT,
           tabBarInactiveTintColor: theme.colors.text.secondary,

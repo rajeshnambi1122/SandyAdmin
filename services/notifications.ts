@@ -1,9 +1,20 @@
-import messaging from '@react-native-firebase/messaging';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { Alert, AppState, Linking, Platform } from 'react-native';
 import { adminAPI } from './api';
+
+// Define type for notification response
+interface NotificationResponse {
+  notification: {
+    request: {
+      content: {
+        data: Record<string, any>;
+      };
+    };
+  };
+}
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -26,10 +37,10 @@ Notifications.setNotificationHandler({
 });
 
 // Track app state
-let appState = AppState.currentState;
+let appState: string = AppState.currentState;
 
 // Listen for app state changes
-AppState.addEventListener('change', nextAppState => {
+AppState.addEventListener('change', (nextAppState: string) => {
   console.log('App state changed:', { from: appState, to: nextAppState });
   appState = nextAppState;
 });
@@ -161,7 +172,7 @@ export const requestNotificationPermission = async () => {
 };
 
 // Handle background messages
-messaging().setBackgroundMessageHandler(async remoteMessage => {
+messaging().setBackgroundMessageHandler(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
   console.log('Message handled in the background!', {
     messageId: remoteMessage.messageId,
     data: remoteMessage.data,
@@ -172,18 +183,26 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
   // Only schedule a local notification if the app is in background
   if (remoteMessage.notification && appState === 'background') {
     try {
-      // Cancel any existing notifications to prevent duplicates
-      await Notifications.cancelAllScheduledNotificationsAsync();
-      
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: remoteMessage.notification.title,
-          body: remoteMessage.notification.body,
-          data: remoteMessage.data,
-        },
-        trigger: null,
-      });
-      console.log('Background notification scheduled successfully');
+      // Check if notification with same ID already exists
+      const existingNotifications = await Notifications.getPresentedNotificationsAsync();
+      const isDuplicate = existingNotifications.some(
+        notification => notification.request.identifier === remoteMessage.messageId
+      );
+
+      if (!isDuplicate) {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: remoteMessage.notification.title,
+            body: remoteMessage.notification.body,
+            data: { ...remoteMessage.data, type: 'new_order' },
+          },
+          trigger: null,
+          identifier: remoteMessage.messageId // Use messageId as identifier
+        });
+        console.log('Background notification scheduled successfully');
+      } else {
+        console.log('Duplicate notification prevented:', remoteMessage.messageId);
+      }
     } catch (error) {
       console.error('Error scheduling background notification:', error);
     }
@@ -194,7 +213,7 @@ export const setupNotificationListeners = () => {
   console.log('Setting up notification listeners...');
   
   // Handle FCM messages when app is in foreground
-  const onMessageListener = messaging().onMessage(async remoteMessage => {
+  const onMessageListener = messaging().onMessage(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
     console.log('FCM Message received in foreground:', {
       messageId: remoteMessage.messageId,
       data: remoteMessage.data,
@@ -205,18 +224,26 @@ export const setupNotificationListeners = () => {
     // For foreground messages, we can show the notification directly
     if (remoteMessage.notification) {
       try {
-        // Cancel any existing notifications to prevent duplicates
-        await Notifications.cancelAllScheduledNotificationsAsync();
-        
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: remoteMessage.notification.title,
-            body: remoteMessage.notification.body,
-            data: remoteMessage.data,
-          },
-          trigger: null,
-        });
-        console.log('Foreground notification scheduled successfully');
+        // Check if notification with same ID already exists
+        const existingNotifications = await Notifications.getPresentedNotificationsAsync();
+        const isDuplicate = existingNotifications.some(
+          notification => notification.request.identifier === remoteMessage.messageId
+        );
+
+        if (!isDuplicate) {
+          await Notifications.scheduleNotificationAsync({
+            content: {
+              title: remoteMessage.notification.title,
+              body: remoteMessage.notification.body,
+              data: { ...remoteMessage.data, type: 'new_order' },
+            },
+            trigger: null,
+            identifier: remoteMessage.messageId // Use messageId as identifier
+          });
+          console.log('Foreground notification scheduled successfully');
+        } else {
+          console.log('Duplicate notification prevented:', remoteMessage.messageId);
+        }
       } catch (error) {
         console.error('Error scheduling foreground notification:', error);
       }
@@ -224,7 +251,7 @@ export const setupNotificationListeners = () => {
   });
 
   // Handle notification tap when app is in background
-  const backgroundListener = messaging().onNotificationOpenedApp(remoteMessage => {
+  const backgroundListener = messaging().onNotificationOpenedApp((remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
     console.log('Notification opened app from background:', {
       messageId: remoteMessage.messageId,
       data: remoteMessage.data,
@@ -236,7 +263,7 @@ export const setupNotificationListeners = () => {
   // Handle notification tap when app was opened from quit state
   messaging()
     .getInitialNotification()
-    .then(remoteMessage => {
+    .then((remoteMessage: FirebaseMessagingTypes.RemoteMessage | null) => {
       if (remoteMessage) {
         console.log('Notification opened app from quit state:', {
           messageId: remoteMessage.messageId,
@@ -246,14 +273,17 @@ export const setupNotificationListeners = () => {
         handleNotificationNavigation(remoteMessage.data);
       }
     })
-    .catch(error => {
+    .catch((error: Error) => {
       console.error('Error getting initial notification:', error);
     });
 
-  // Add notification response listener
-  const notificationResponseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+  // Add notification response listener for Expo notifications
+  const notificationResponseSubscription = Notifications.addNotificationResponseReceivedListener((response: NotificationResponse) => {
     console.log('Notification response received:', response);
-    handleNotificationNavigation(response.notification.request.content.data);
+    const data = response.notification.request.content.data;
+    console.log('Notification data:', data);
+    
+    handleNotificationNavigation(data);
   });
 
   return () => {
@@ -269,23 +299,10 @@ const handleNotificationNavigation = (data: any) => {
 
   console.log('Handling notification navigation with data:', data);
 
-  // Add a longer delay to ensure navigation state is ready
-  setTimeout(() => {
-    try {
-      // Navigate to orders tab for all notifications
-      router.replace('/(tabs)/orders');
-      console.log('Navigation to orders tab initiated');
-    } catch (error) {
-      console.error('Error navigating to orders tab:', error);
-      // Retry navigation after a longer delay if first attempt fails
-      setTimeout(() => {
-        try {
-          router.replace('/(tabs)/orders');
-          console.log('Retry navigation to orders tab initiated');
-        } catch (retryError) {
-          console.error('Error in retry navigation to orders tab:', retryError);
-        }
-      }, 2000);
-    }
-  }, 1500);
+  // Navigate to orders tab with refresh
+  router.replace({
+    pathname: '/(tabs)/orders',
+    params: { refresh: Date.now() }
+  });
+  console.log('Navigation to orders tab initiated');
 }; 
