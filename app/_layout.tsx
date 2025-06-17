@@ -72,10 +72,6 @@ function RootLayoutContent() {
       } else if (isAuthenticated && inAuthGroup) {
         console.log('Redirecting to /(tabs)/orders');
         router.replace('/(tabs)/orders');
-      } else if (isAuthenticated && segments[0] === '(tabs)' && segments[1] === undefined) {
-        // Only redirect to orders if we're at the root of tabs
-        console.log('Redirecting from root to orders');
-        router.replace('/(tabs)/orders');
       }
     }
   }, [isAuthenticated, segments, isLoading]);

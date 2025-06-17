@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import messaging from '@react-native-firebase/messaging';
+import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -24,6 +25,20 @@ export default function DashboardScreen() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const router = useRouter();
+
+  // Route guard
+  useEffect(() => {
+    if (!user || user.role !== 'admin1') {
+      router.replace('/(tabs)/orders');
+      return;
+    }
+  }, [user]);
+
+  // If not admin1, don't render anything
+  if (!user || user.role !== 'admin1') {
+    return null;
+  }
 
   const formatCurrency = (amount: number) => {
     return `$${amount.toFixed(2)}`;

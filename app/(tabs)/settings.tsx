@@ -119,6 +119,7 @@ export default function SettingsScreen() {
       backgroundColor: theme.colors.surface.DEFAULT,
       borderColor: theme.colors.error,
       borderWidth: 1,
+      borderRadius: theme.borderRadius.lg,
     },
     logoutContent: {
       flexDirection: 'row',
@@ -197,7 +198,7 @@ export default function SettingsScreen() {
       </View>
 
       <TouchableOpacity 
-        style={[styles.section, styles.logoutButton]} 
+        style={styles.logoutButton} 
         onPress={signOut}
       >
         <View style={styles.logoutContent}>

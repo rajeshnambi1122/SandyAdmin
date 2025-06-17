@@ -1,17 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Platform,
-    RefreshControl,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextStyle,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  Alert,
+  FlatList,
+  Platform,
+  RefreshControl,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 import { LoadingSpinner } from '../../components/ui/loading-spinner';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -52,6 +52,13 @@ interface Styles {
   itemSubtotal: TextStyle;
   notesContainer: ViewStyle;
   itemNotes: TextStyle;
+  // New styles for prominent cooking instructions and toppings
+  cookingInstructionsContainer: ViewStyle;
+  cookingInstructionsTitle: TextStyle;
+  cookingInstructionsText: TextStyle;
+  toppingsContainer: ViewStyle;
+  toppingsTitle: TextStyle;
+  toppingsText: TextStyle;
   statusContainer: ViewStyle;
   statusInfo: ViewStyle;
   statusLabel: TextStyle;
@@ -300,6 +307,35 @@ export default function OrdersScreen() {
       color: theme.colors.text.inverse,
       fontSize: 16,
     },
+    // New prominent cooking instructions container
+    cookingInstructionsContainer: {
+      backgroundColor: '#FFF3CD', // Light yellow background
+      borderLeftWidth: 4,
+      borderLeftColor: '#FF6B35', // Orange accent
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.sm,
+      shadowColor: '#FF6B35',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    cookingInstructionsTitle: {
+      ...theme.typography.body,
+      fontWeight: '800' as const,
+      color: '#D63384', // Bold pink color
+      fontSize: 16,
+      marginBottom: theme.spacing.xs,
+      textTransform: 'uppercase',
+    },
+    cookingInstructionsText: {
+      ...theme.typography.body,
+      fontWeight: '700' as const,
+      color: '#212529', // Dark text
+      fontSize: 15,
+      lineHeight: 22,
+    },
     itemsContainer: {
       marginBottom: theme.spacing.sm,
     },
@@ -381,6 +417,35 @@ export default function OrdersScreen() {
       fontStyle: 'italic',
       flex: 1,
       fontSize: 12,
+    },
+    // New prominent toppings container
+    toppingsContainer: {
+      backgroundColor: '#E8F5E8', // Light green background
+      borderLeftWidth: 4,
+      borderLeftColor: '#28A745', // Green accent
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      marginTop: theme.spacing.xs,
+      shadowColor: '#28A745',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 1,
+    },
+    toppingsTitle: {
+      ...theme.typography.caption,
+      fontWeight: '800' as const,
+      color: '#155724', // Dark green
+      fontSize: 13,
+      marginBottom: 2,
+      textTransform: 'uppercase',
+    },
+    toppingsText: {
+      ...theme.typography.body,
+      fontWeight: '700' as const,
+      color: '#155724', // Dark green
+      fontSize: 14,
+      lineHeight: 20,
     },
     statusContainer: {
       flexDirection: 'row',
@@ -503,10 +568,15 @@ export default function OrdersScreen() {
           <Text style={styles.totalLabel}>Total Amount</Text>
           <Text style={styles.total}>${item.totalAmount.toFixed(2)}</Text>
         </View>
+        
+        {/* Prominent Cooking Instructions */}
         {item.cookingInstructions && (
-          <View style={styles.notesContainer}>
-            <Ionicons name="reader" size={16} color={theme.colors.text.secondary} />
-            <Text style={styles.itemNotes}>Cooking Instructions: {item.cookingInstructions}</Text>
+          <View style={styles.cookingInstructionsContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.xs }}>
+              <Ionicons name="flame" size={20} color="#D63384" />
+              <Text style={styles.cookingInstructionsTitle}> COOKING INSTRUCTIONS</Text>
+            </View>
+            <Text style={styles.cookingInstructionsText}>{item.cookingInstructions}</Text>
           </View>
         )}
       </View>
@@ -528,14 +598,20 @@ export default function OrdersScreen() {
                 ${(orderItem.price * orderItem.quantity).toFixed(2)}
               </Text>
             </View>
+            
+            {/* Prominent Toppings Display */}
             {orderItem.toppings && orderItem.toppings.length > 0 && (
-              <View style={styles.notesContainer}>
-                <Ionicons name="pizza" size={16} color={theme.colors.text.secondary} />
-                <Text style={styles.itemNotes}>
-                  Toppings: {orderItem.toppings.join(', ')}
+              <View style={styles.toppingsContainer}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="pizza" size={16} color="#155724" />
+                  <Text style={styles.toppingsTitle}> TOPPINGS:</Text>
+                </View>
+                <Text style={styles.toppingsText}>
+                  {orderItem.toppings.join(', ')}
                 </Text>
               </View>
             )}
+            
             {orderItem.notes && (
               <View style={styles.notesContainer}>
                 <Ionicons name="information-circle" size={16} color={theme.colors.text.secondary} />

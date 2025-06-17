@@ -1,17 +1,18 @@
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { AuthContext } from '../_layout';
 
 export default function TabLayout() {
   const { theme } = useTheme();
+  const { user } = useContext(AuthContext);
 
   return (
     <>
       <StatusBar style="dark" backgroundColor={theme.colors.background.DEFAULT} />
       <Tabs
-        initialRouteName="orders"
         screenOptions={{
           tabBarActiveTintColor: theme.colors.primary.DEFAULT,
           tabBarInactiveTintColor: theme.colors.text.secondary,
@@ -48,6 +49,8 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="stats-chart" size={size} color={color} />
             ),
+            href: user?.role === 'admin1' ? undefined : null,
+            tabBarStyle: user?.role === 'admin1' ? undefined : { display: 'none' },
           }}
         />
         <Tabs.Screen
