@@ -2,8 +2,10 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useContext } from 'react';
+import { Platform } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AuthContext } from '../_layout';
+import { CustomTabBar } from '../../components/CustomTabBar';
 
 export default function TabLayout() {
   const { theme } = useTheme();
@@ -13,23 +15,8 @@ export default function TabLayout() {
     <>
       <StatusBar style="dark" backgroundColor={theme.colors.background.DEFAULT} />
       <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
-          tabBarActiveTintColor: theme.colors.primary.DEFAULT,
-          tabBarInactiveTintColor: theme.colors.text.secondary,
-          tabBarStyle: {
-            backgroundColor: theme.colors.surface.DEFAULT,
-            borderTopColor: theme.colors.border.DEFAULT,
-            borderTopWidth: 1,
-            paddingBottom: 4,
-            paddingTop: 2,
-            height: 70,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '600',
-            marginTop: 0,
-            marginBottom: 8,
-          },
           headerStyle: {
             backgroundColor: theme.colors.primary.DEFAULT,
           },
@@ -49,8 +36,6 @@ export default function TabLayout() {
             tabBarIcon: ({ color, size }) => (
               <Ionicons name="stats-chart" size={size} color={color} />
             ),
-            href: user?.role === 'admin1' ? undefined : null,
-            tabBarStyle: user?.role === 'admin1' ? undefined : { display: 'none' },
           }}
         />
         <Tabs.Screen

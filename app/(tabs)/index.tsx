@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import messaging from '@react-native-firebase/messaging';
 import { useRouter } from 'expo-router';
 import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -7,6 +6,14 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { adminAPI, ordersAPI } from '../../services/api';
 import { Order } from '../../types/order';
 import { AuthContext } from '../_layout';
+
+// Dynamically import Firebase Messaging (only available in native builds)
+let messaging: any = null;
+try {
+  messaging = require('@react-native-firebase/messaging').default;
+} catch (error) {
+  console.warn('Firebase Messaging not available in this build');
+}
 
 interface DashboardStats {
   totalOrders: number;
@@ -26,19 +33,6 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-
-  // Route guard
-  useEffect(() => {
-    if (!user || user.role !== 'admin1') {
-      router.replace('/(tabs)/orders');
-      return;
-    }
-  }, [user]);
-
-  // If not admin1, don't render anything
-  if (!user || user.role !== 'admin1') {
-    return null;
-  }
 
   const formatCurrency = (amount: number) => {
     return `$${amount.toFixed(2)}`;
@@ -79,26 +73,32 @@ export default function DashboardScreen() {
   useEffect(() => {
     fetchStats();
 
-    // Request permission and get FCM token
-    messaging().requestPermission()
-      .then(authStatus => {
-        if (authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL) {
-          // Get the device token
-          messaging().getToken().then(async token => {
-            console.log('FCM Token:', token);
-            // Send this token to your backend!
-            if (token) {
-              try {
-                await adminAPI.updateFCMToken(token);
-                console.log('FCM Token sent to backend successfully');
-              } catch (error) {
-                console.error('Error sending FCM token to backend:', error);
-              }
+    // Request permission and get FCM token (only if messaging is available)
+    try {
+      if (messaging) {
+        messaging().requestPermission()
+          .then((authStatus: any) => {
+            if (authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL) {
+              // Get the device token
+              messaging().getToken().then(async (token: string) => {
+                console.log('FCM Token:', token);
+                // Send this token to your backend!
+                if (token) {
+                  try {
+                    await adminAPI.updateFCMToken(token);
+                    console.log('FCM Token sent to backend successfully');
+                  } catch (error) {
+                    console.error('Error sending FCM token to backend:', error);
+                  }
+                }
+              });
             }
           });
-        }
-      });
+      }
+    } catch (error) {
+      console.warn('Firebase Messaging not available:', error);
+    }
   }, []);
 
   const onRefresh = () => {
@@ -123,7 +123,7 @@ export default function DashboardScreen() {
     headerContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: theme.spacing.lg,
+      marginBottom: theme.spacing.sm,
     },
     logo: {
       width: 40,
@@ -203,7 +203,7 @@ export default function DashboardScreen() {
       color: 'rgba(255, 255, 255, 0.9)',
     },
     fullWidthCard: {
-      marginTop: theme.spacing.md,
+      marginTop: theme.spacing.xs,
     },
     revenueStatCard: {
       backgroundColor: theme.colors.success,

@@ -101,8 +101,8 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: '#FFFFFF' }]}>
-      <StatusBar style="dark" backgroundColor="#FFFFFF" />
+    <View style={[styles.container, { backgroundColor: theme.colors.background.DEFAULT }]}>
+         <StatusBar style="dark" backgroundColor={theme.colors.background.DEFAULT} />
       <KeyboardAvoidingView
         style={[styles.container, { backgroundColor: 'transparent' }]}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -120,16 +120,14 @@ export default function LoginScreen() {
           </View>
           <View style={[styles.formContainer, { 
             backgroundColor: '#FFFFFF',
-            borderWidth: 1,
-            borderColor: theme.colors.border.light,
-            shadowColor: theme.colors.text.DEFAULT,
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.08,
-            shadowRadius: 12,
-            elevation: 4,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.1,
+            shadowRadius: 16,
+            elevation: 5,
           }]}>
-            <Text style={[styles.title, { color: theme.colors.primary.DEFAULT }]}>Welcome Back</Text>
-            <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>Sign in to continue</Text>
+            <Text style={[styles.title, { color: theme.colors.text.DEFAULT }]}>Welcome Back</Text>
+            <Text style={[styles.subtitle, { color: theme.colors.text.secondary }]}>Sign in to your admin account</Text>
             
             <View style={styles.inputContainer}>
               <Text style={[styles.label, { color: theme.colors.text.DEFAULT }]}>Email</Text>
@@ -197,13 +195,14 @@ export default function LoginScreen() {
               style={[styles.button, { 
                 backgroundColor: theme.colors.primary.DEFAULT,
                 shadowColor: theme.colors.primary.DEFAULT,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
                 shadowRadius: 8,
                 elevation: 4,
               }]}
               onPress={handleLogin}
               disabled={loading}
+              activeOpacity={0.85}
             >
               {loading ? (
                 <LoadingSpinner size="small" color={theme.colors.text.inverse} />
@@ -225,71 +224,84 @@ const styles = StyleSheet.create<Styles>({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    padding: 20,
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 48,
   },
   logo: {
-    width: 120,
-    height: 120,
-    borderRadius: 30,
+    width: 100,
+    height: 100,
+    borderRadius: 24,
   },
   formContainer: {
-    borderRadius: 16,
-    padding: 32,
+    borderRadius: 24,
+    padding: 28,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '700',
     textAlign: 'center',
     marginBottom: 8,
+    letterSpacing: 0,
   },
   subtitle: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 40,
+    letterSpacing: 0.15,
+    fontWeight: '400',
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 8,
     fontWeight: '600',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   input: {
     borderWidth: 1,
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    letterSpacing: 0.15,
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    position: 'relative',
   },
   eyeButton: {
     position: 'absolute',
-    right: 16,
+    right: 12,
     padding: 8,
+    zIndex: 1,
   },
   inputError: {
     borderColor: '#ff0000',
+    borderWidth: 2,
   },
   errorText: {
-    fontSize: 14,
-    marginTop: 4,
+    fontSize: 13,
+    marginTop: 6,
+    letterSpacing: 0.25,
   },
   button: {
-    padding: 18,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 100,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 24,
+    height: 56,
   },
   buttonText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
 }); 

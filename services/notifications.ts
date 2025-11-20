@@ -1,9 +1,19 @@
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { Alert, AppState, Linking, Platform } from 'react-native';
 import { adminAPI } from './api';
+
+// Dynamically import Firebase Messaging (only available in native builds)
+let messaging: any = null;
+let FirebaseMessagingTypes: any = null;
+try {
+  const firebaseMessaging = require('@react-native-firebase/messaging');
+  messaging = firebaseMessaging.default;
+  FirebaseMessagingTypes = firebaseMessaging.FirebaseMessagingTypes;
+} catch (error) {
+  console.warn('Firebase Messaging not available. Running in development mode or Expo Go.');
+}
 
 // Define type for notification response
 interface NotificationResponse {
@@ -26,7 +36,7 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
     priority: Notifications.AndroidNotificationPriority.HIGH,
     android: {
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_stat_noti',
       color: '#FF231F7C',
       priority: 'high',
       vibrate: [0, 250, 250, 250],
@@ -112,21 +122,22 @@ export const requestNotificationPermission = async () => {
     // Configure notification channel for Android
     await configureNotificationChannel();
 
-    // Then request Firebase messaging permissions
-    console.log('Requesting Firebase messaging permissions...');
-    const authStatus = await messaging().requestPermission();
-    console.log('Firebase messaging permission status:', authStatus);
-    
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    // Then request Firebase messaging permissions (only if available)
+    if (messaging) {
+      console.log('Requesting Firebase messaging permissions...');
+      const authStatus = await messaging().requestPermission();
+      console.log('Firebase messaging permission status:', authStatus);
+      
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (!enabled) {
-      console.log('Failed to get Firebase messaging permissions!');
-      Alert.alert(
-        'Permission Required',
-        'Please enable notifications in your device settings to receive important updates.',
-        [
+      if (!enabled) {
+        console.log('Failed to get Firebase messaging permissions!');
+        Alert.alert(
+          'Permission Required',
+          'Please enable notifications in your device settings to receive important updates.',
+          [
           {
             text: 'Open Settings',
             onPress: () => {
@@ -146,22 +157,26 @@ export const requestNotificationPermission = async () => {
       return null;
     }
 
-    // Get FCM token
-    const token = await messaging().getToken();
-    console.log('Native FCM Token:', token);
+      // Get FCM token
+      const token = await messaging().getToken();
+      console.log('Native FCM Token:', token);
 
-    if (token) {
-      // Send token to backend
-      try {
-        await adminAPI.updateFCMToken(token);
-        console.log('FCM Token sent to backend successfully');
-        return token;
-      } catch (error) {
-        console.error('Error sending FCM token to backend:', error);
+      if (token) {
+        // Send token to backend
+        try {
+          await adminAPI.updateFCMToken(token);
+          console.log('FCM Token sent to backend successfully');
+          return token;
+        } catch (error) {
+          console.error('Error sending FCM token to backend:', error);
+          return null;
+        }
+      } else {
+        console.log('FCM token not available.');
         return null;
       }
     } else {
-      console.log('FCM token not available.');
+      console.log('Firebase Messaging not available. Skipping FCM token registration.');
       return null;
     }
 
@@ -171,49 +186,31 @@ export const requestNotificationPermission = async () => {
   }
 };
 
-// Handle background messages
-messaging().setBackgroundMessageHandler(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-  console.log('Message handled in the background!', {
-    messageId: remoteMessage.messageId,
-    data: remoteMessage.data,
-    notification: remoteMessage.notification,
-    appState
+// Handle background messages (only if messaging is available)
+if (messaging) {
+  messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
+    console.log('Message handled in the background!', {
+      messageId: remoteMessage.messageId,
+      data: remoteMessage.data,
+      notification: remoteMessage.notification,
+      appState
+    });
+    
+    // Firebase automatically shows notifications in background, no need to schedule additional ones
+    console.log('Background message received, Firebase will handle notification display');
   });
-  
-  // Only schedule a local notification if the app is in background
-  if (remoteMessage.notification && appState === 'background') {
-    try {
-      // Check if notification with same ID already exists
-      const existingNotifications = await Notifications.getPresentedNotificationsAsync();
-      const isDuplicate = existingNotifications.some(
-        notification => notification.request.identifier === remoteMessage.messageId
-      );
-
-      if (!isDuplicate) {
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: remoteMessage.notification.title,
-            body: remoteMessage.notification.body,
-            data: { ...remoteMessage.data, type: 'new_order' },
-          },
-          trigger: null,
-          identifier: remoteMessage.messageId // Use messageId as identifier
-        });
-        console.log('Background notification scheduled successfully');
-      } else {
-        console.log('Duplicate notification prevented:', remoteMessage.messageId);
-      }
-    } catch (error) {
-      console.error('Error scheduling background notification:', error);
-    }
-  }
-});
+}
 
 export const setupNotificationListeners = () => {
   console.log('Setting up notification listeners...');
   
+  if (!messaging) {
+    console.warn('Firebase Messaging not available. Notification listeners not set up.');
+    return () => {}; // Return empty cleanup function
+  }
+
   // Handle FCM messages when app is in foreground
-  const onMessageListener = messaging().onMessage(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+  const onMessageListener = messaging().onMessage(async (remoteMessage: any) => {
     console.log('FCM Message received in foreground:', {
       messageId: remoteMessage.messageId,
       data: remoteMessage.data,
@@ -221,37 +218,14 @@ export const setupNotificationListeners = () => {
       appState
     });
     
-    // For foreground messages, we can show the notification directly
+    // For foreground messages, just log - Firebase handles the display
     if (remoteMessage.notification) {
-      try {
-        // Check if notification with same ID already exists
-        const existingNotifications = await Notifications.getPresentedNotificationsAsync();
-        const isDuplicate = existingNotifications.some(
-          notification => notification.request.identifier === remoteMessage.messageId
-        );
-
-        if (!isDuplicate) {
-          await Notifications.scheduleNotificationAsync({
-            content: {
-              title: remoteMessage.notification.title,
-              body: remoteMessage.notification.body,
-              data: { ...remoteMessage.data, type: 'new_order' },
-            },
-            trigger: null,
-            identifier: remoteMessage.messageId // Use messageId as identifier
-          });
-          console.log('Foreground notification scheduled successfully');
-        } else {
-          console.log('Duplicate notification prevented:', remoteMessage.messageId);
-        }
-      } catch (error) {
-        console.error('Error scheduling foreground notification:', error);
-      }
+      console.log('Foreground message received, Firebase will handle notification display');
     }
   });
 
   // Handle notification tap when app is in background
-  const backgroundListener = messaging().onNotificationOpenedApp((remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+  const backgroundListener = messaging().onNotificationOpenedApp((remoteMessage: any) => {
     console.log('Notification opened app from background:', {
       messageId: remoteMessage.messageId,
       data: remoteMessage.data,
@@ -263,7 +237,7 @@ export const setupNotificationListeners = () => {
   // Handle notification tap when app was opened from quit state
   messaging()
     .getInitialNotification()
-    .then((remoteMessage: FirebaseMessagingTypes.RemoteMessage | null) => {
+    .then((remoteMessage: any) => {
       if (remoteMessage) {
         console.log('Notification opened app from quit state:', {
           messageId: remoteMessage.messageId,

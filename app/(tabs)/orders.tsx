@@ -37,6 +37,11 @@ interface Styles {
   contactItem: ViewStyle;
   phone: TextStyle;
   address: TextStyle;
+  deliveryAddressContainer: ViewStyle;
+  deliveryAddressText: TextStyle;
+  deliveryTypeContainer: ViewStyle;
+  deliveryTypeBadge: ViewStyle;
+  deliveryTypeText: TextStyle;
   totalContainer: ViewStyle;
   totalLabel: TextStyle;
   total: TextStyle;
@@ -89,6 +94,7 @@ export default function OrdersScreen() {
           ...order,
           status: order.status as 'pending' | 'preparing' | 'ready' | 'delivered'
         }));
+      
         
         setOrders(typedOrders);
         if (typedOrders.length > 0) {
@@ -162,6 +168,22 @@ export default function OrdersScreen() {
     }
   };
 
+  const getDeliveryTypeInfo = (deliveryType?: string) => {
+    if (deliveryType === 'delivery' || deliveryType === 'door-delivery') {
+      return {
+        icon: 'car' as const,
+        backgroundColor: '#28A745', // Green for delivery
+        text: 'Delivery'
+      };
+    } else {
+      return {
+        icon: 'storefront' as const,
+        backgroundColor: '#FF6B35', // Orange for pickup
+        text: 'Pickup'
+      };
+    }
+  };
+
   const styles = StyleSheet.create<Styles>({
     container: {
       flex: 1,
@@ -179,68 +201,56 @@ export default function OrdersScreen() {
     },
     orderCard: {
       backgroundColor: theme.colors.surface.DEFAULT,
-      borderRadius: theme.borderRadius.lg,
-      padding: theme.spacing.md,
-      marginBottom: theme.spacing.sm,
-      shadowColor: theme.colors.text.DEFAULT,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 12,
-      elevation: 8,
-      borderWidth: 1,
-      borderColor: theme.colors.border.light,
+      borderRadius: 16,
+      padding: 0,
+      marginBottom: theme.spacing.md,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 3,
+      overflow: 'hidden',
     },
     orderHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: theme.spacing.sm,
+      padding: theme.spacing.md,
       paddingBottom: theme.spacing.sm,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border.light,
+      backgroundColor: `${theme.colors.primary.DEFAULT}08`,
     },
     orderIdContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.xs,
-      backgroundColor: `${theme.colors.primary.DEFAULT}10`,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
     },
     orderId: {
       ...theme.typography.body,
       fontWeight: '700' as const,
-      color: theme.colors.primary.DEFAULT,
-      fontSize: 14,
+      color: theme.colors.text.DEFAULT,
+      fontSize: 16,
+      letterSpacing: 0.15,
     },
     orderDateContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.xs,
-      backgroundColor: theme.colors.background.secondary,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
+      gap: 4,
     },
     orderDate: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
-      fontSize: 12,
+      fontSize: 13,
+      letterSpacing: 0.25,
     },
     orderDetails: {
-      marginBottom: theme.spacing.sm,
+      padding: theme.spacing.md,
+      paddingTop: theme.spacing.sm,
     },
     customerInfo: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: theme.spacing.sm,
-      marginBottom: theme.spacing.sm,
-      padding: theme.spacing.sm,
-      backgroundColor: `${theme.colors.primary.DEFAULT}08`,
-      borderRadius: theme.borderRadius.md,
-      borderWidth: 1,
-      borderColor: `${theme.colors.primary.DEFAULT}15`,
+      marginBottom: theme.spacing.md,
     },
     customerTextContainer: {
       flex: 1,
@@ -249,7 +259,9 @@ export default function OrdersScreen() {
       ...theme.typography.h3,
       color: theme.colors.text.DEFAULT,
       marginBottom: 2,
-      fontSize: 15,
+      fontSize: 16,
+      fontWeight: '600' as const,
+      letterSpacing: 0.15,
     },
     email: {
       ...theme.typography.caption,
@@ -257,55 +269,89 @@ export default function OrdersScreen() {
       fontSize: 12,
     },
     contactInfo: {
-      marginBottom: theme.spacing.sm,
-      backgroundColor: theme.colors.background.secondary,
-      borderRadius: theme.borderRadius.md,
-      padding: theme.spacing.sm,
-      borderWidth: 1,
-      borderColor: theme.colors.border.light,
+      marginBottom: theme.spacing.md,
+      gap: theme.spacing.xs,
     },
     contactItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.sm,
-      marginBottom: theme.spacing.xs,
-      paddingVertical: theme.spacing.xs,
+      gap: theme.spacing.xs,
     },
     phone: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
-      fontSize: 12,
+      fontSize: 14,
+      letterSpacing: 0.25,
     },
     address: {
       ...theme.typography.caption,
       color: theme.colors.text.secondary,
-      fontSize: 12,
+      fontSize: 14,
+      letterSpacing: 0.25,
+      flex: 1,
+    },
+    deliveryAddressContainer: {
+      backgroundColor: '#E8F5E8', // Light green background
+      borderLeftWidth: 4,
+      borderLeftColor: '#28A745', // Green accent
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.sm,
+      shadowColor: '#28A745',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    deliveryAddressText: {
+      ...theme.typography.body,
+      fontWeight: '700' as const,
+      color: '#155724', // Dark green
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    deliveryTypeContainer: {
+      marginBottom: theme.spacing.md,
+      alignItems: 'flex-start',
+    },
+    deliveryTypeBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+    },
+    deliveryTypeText: {
+      ...theme.typography.caption,
+      fontWeight: '600' as const,
+      color: theme.colors.text.inverse,
+      fontSize: 13,
+      letterSpacing: 0.5,
+      textTransform: 'uppercase',
     },
     totalContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       backgroundColor: theme.colors.primary.DEFAULT,
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.sm,
-      shadowColor: theme.colors.primary.DEFAULT,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 2,
+      padding: 16,
+      marginBottom: theme.spacing.md,
+      borderRadius: 12,
     },
     totalLabel: {
       ...theme.typography.body,
       color: theme.colors.text.inverse,
-      fontWeight: '600' as const,
+      fontWeight: '500' as const,
       fontSize: 14,
+      letterSpacing: 0.25,
     },
     total: {
       ...theme.typography.h3,
       fontWeight: '700' as const,
       color: theme.colors.text.inverse,
-      fontSize: 16,
+      fontSize: 20,
+      letterSpacing: 0,
     },
     // New prominent cooking instructions container
     cookingInstructionsContainer: {
@@ -337,30 +383,29 @@ export default function OrdersScreen() {
       lineHeight: 22,
     },
     itemsContainer: {
-      marginBottom: theme.spacing.sm,
+      padding: theme.spacing.md,
+      paddingTop: 0,
     },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.xs,
-      marginBottom: theme.spacing.sm,
-      paddingBottom: theme.spacing.xs,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border.light,
+      gap: 8,
+      marginBottom: theme.spacing.md,
     },
     sectionTitle: {
       ...theme.typography.h3,
       color: theme.colors.text.DEFAULT,
       fontWeight: '600' as const,
-      fontSize: 14,
+      fontSize: 16,
+      letterSpacing: 0.15,
     },
     orderItem: {
-      backgroundColor: theme.colors.background.secondary,
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.xs,
-      borderLeftWidth: 3,
-      borderLeftColor: theme.colors.primary.DEFAULT,
+      backgroundColor: `${theme.colors.primary.DEFAULT}05`,
+      padding: 12,
+      borderRadius: 12,
+      marginBottom: 12,
+      borderWidth: 1,
+      borderColor: `${theme.colors.primary.DEFAULT}15`,
     },
     itemHeader: {
       flexDirection: 'row',
@@ -372,17 +417,21 @@ export default function OrdersScreen() {
       ...theme.typography.body,
       fontWeight: '600' as const,
       color: theme.colors.text.DEFAULT,
-      fontSize: 14,
+      fontSize: 15,
+      letterSpacing: 0.15,
+      flex: 1,
     },
     itemQuantity: {
       ...theme.typography.caption,
       color: theme.colors.text.inverse,
       backgroundColor: theme.colors.primary.DEFAULT,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: 2,
-      borderRadius: theme.borderRadius.sm,
-      fontWeight: '700' as const,
-      fontSize: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+      fontWeight: '600' as const,
+      fontSize: 13,
+      minWidth: 32,
+      textAlign: 'center',
     },
     itemDetails: {
       flexDirection: 'row',
@@ -451,9 +500,11 @@ export default function OrdersScreen() {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: theme.spacing.sm,
+      padding: theme.spacing.md,
+      paddingTop: theme.spacing.md,
+      backgroundColor: `${theme.colors.background.secondary}80`,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.border.light,
+      borderTopColor: `${theme.colors.border.light}40`,
     },
     statusInfo: {
       flexDirection: 'row',
@@ -469,10 +520,10 @@ export default function OrdersScreen() {
     statusBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
     },
     statusText: {
       ...theme.typography.caption,
@@ -487,21 +538,18 @@ export default function OrdersScreen() {
     button: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.md,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      elevation: 2,
+      gap: 6,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 20,
+      elevation: 0,
     },
     buttonText: {
       ...theme.typography.caption,
       color: theme.colors.text.inverse,
-      fontWeight: '700' as const,
-      fontSize: 12,
+      fontWeight: '600' as const,
+      fontSize: 13,
+      letterSpacing: 0.5,
     },
     emptyContainer: {
       flex: 1,
@@ -560,10 +608,47 @@ export default function OrdersScreen() {
             <Text style={styles.phone}>{item.phone || 'No phone provided'}</Text>
           </View>
           <View style={styles.contactItem}>
-            <Ionicons name="location" size={16} color={theme.colors.text.secondary} />
-            <Text style={styles.address}>{item.address || 'No address provided'}</Text>
+            <Ionicons 
+              name={(item.deliveryType === 'delivery' || item.deliveryType === 'door-delivery') ? 'home' : 'storefront'} 
+              size={16} 
+              color={theme.colors.text.secondary} 
+            />
+            <Text style={styles.address}>
+              {(item.deliveryType === 'delivery' || item.deliveryType === 'door-delivery')
+                ? (item.address || 'No delivery address provided')
+                : (item.address === 'Pickup' ? 'Store Pickup' : item.address || 'Store Pickup')
+              }
+            </Text>
           </View>
         </View>
+        
+        {/* Delivery Type Badge */}
+        <View style={styles.deliveryTypeContainer}>
+          {(() => {
+            // Debug: Log the delivery type for this specific order
+            
+            const deliveryInfo = getDeliveryTypeInfo(item.deliveryType);
+            return (
+              <View style={[styles.deliveryTypeBadge, { backgroundColor: deliveryInfo.backgroundColor }]}>
+                <Ionicons name={deliveryInfo.icon} size={16} color={theme.colors.text.inverse} />
+                <Text style={styles.deliveryTypeText}>{deliveryInfo.text}</Text>
+              </View>
+            );
+          })()}
+        </View>
+        
+        {/* Prominent Delivery Address for Delivery Orders */}
+        {(item.deliveryType === 'delivery' || item.deliveryType === 'door-delivery') && item.address && item.address !== 'Pickup' && (
+          <View style={styles.deliveryAddressContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: theme.spacing.xs }}>
+              <Ionicons name="home" size={20} color="#155724" />
+              <Text style={[styles.deliveryAddressText, { fontSize: 16, marginLeft: theme.spacing.xs }]}>
+                DELIVERY ADDRESS
+              </Text>
+            </View>
+            <Text style={styles.deliveryAddressText}>{item.address}</Text>
+          </View>
+        )}
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total Amount</Text>
           <Text style={styles.total}>${item.totalAmount.toFixed(2)}</Text>

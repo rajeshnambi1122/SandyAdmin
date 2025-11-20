@@ -4,6 +4,7 @@ export interface Order {
   email: string;
   phone?: string;
   address?: string;
+  deliveryType?: 'pickup' | 'delivery' | 'door-delivery';
   items: OrderItem[];
   totalAmount: number;
   status: 'pending' | 'preparing' | 'ready' | 'delivered';

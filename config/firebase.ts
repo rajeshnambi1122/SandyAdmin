@@ -1,4 +1,3 @@
-import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { getApp, getApps, initializeApp } from 'firebase/app';
 import { Platform } from 'react-native';
 
@@ -27,10 +26,12 @@ try {
   console.error('Firebase initialization error:', error);
 }
 
-// Initialize Firebase Cloud Messaging
-let messagingInstance: FirebaseMessagingTypes.Module;
+// Initialize Firebase Cloud Messaging (only for native builds)
+let messagingInstance: any = null;
 try {
   if (Platform.OS === 'android') {
+    // Dynamically import Firebase Messaging only if available (native build)
+    const messaging = require('@react-native-firebase/messaging').default;
     messagingInstance = messaging();
     messagingInstance.setAutoInitEnabled(true);
     
@@ -63,7 +64,7 @@ try {
     console.log('Firebase Messaging not initialized for non-Android platform');
   }
 } catch (error) {
-  console.error('Firebase Messaging initialization error:', error);
+  console.warn('Firebase Messaging not available (running in Expo Go or web). This is normal for development. Native modules will work in production builds.');
 }
 
 export { app, messagingInstance as messaging };

@@ -130,16 +130,6 @@ export const ordersAPI = {
 
 // Admin API calls
 export const adminAPI = {
-  getProfile: async () => {
-    const response = await api.get('/admin/profile');
-    return response.data;
-  },
-
-  updateProfile: async (data: { name: string; email: string }) => {
-    const response = await api.put('/admin/profile', data);
-    return response.data;
-  },
-
   logout: async () => {
     try {
       await AsyncStorage.removeItem('token');
